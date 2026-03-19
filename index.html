@@ -217,8 +217,6 @@
   <div class="unit"><span class="num" id="h">00</span><span class="label">時</span></div>
   <div class="sep">·</div>
   <div class="unit"><span class="num" id="m">00</span><span class="label">分</span></div>
-  <div class="sep">·</div>
-  <div class="unit"><span class="num" id="s">00</span><span class="label">秒</span></div>
 </div>
 
 <p class="done-msg" id="done">✦ 讀書會開始了 ✦</p>
@@ -271,14 +269,9 @@
     const mins = Math.floor((diff % 3600000) / 60000);
     const secs = Math.floor((diff % 60000) / 1000);
 
-    const sEl = document.getElementById('s');
-    sEl.classList.add('pulse');
-    setTimeout(() => sEl.classList.remove('pulse'), 200);
-
     document.getElementById('d').textContent = pad(days);
     document.getElementById('h').textContent = pad(hours);
     document.getElementById('m').textContent = pad(mins);
-    sEl.textContent = pad(secs);
   }
 
   function applySettings() {
