@@ -35,7 +35,7 @@
     letter-spacing: 4px;
     color: var(--ink-muted);
     text-transform: uppercase;
-    margin-bottom: 1.2rem;
+    margin-bottom: 0.6rem;
     font-family: 'Noto Serif TC', serif;
     font-weight: 300;
   }
@@ -45,7 +45,7 @@
     font-size: clamp(18px, 4vw, 26px);
     font-weight: 400;
     color: var(--ink);
-    margin-bottom: 0.4rem;
+    margin-bottom: 0.3rem;
     text-align: center;
     letter-spacing: 2px;
   }
@@ -53,16 +53,17 @@
   .subtitle {
     font-size: 13px;
     color: var(--ink-soft);
-    margin-bottom: 3rem;
+    margin-bottom: 1.2rem;
     text-align: center;
     letter-spacing: 1px;
+    min-height: 1em;
   }
 
   .divider {
     width: 40px;
     height: 1px;
     background: var(--ink-muted);
-    margin: 0 auto 3rem;
+    margin: 0 auto 1.5rem;
     opacity: 0.5;
   }
 
@@ -118,17 +119,15 @@
     display: none;
   }
 
-  /* Settings panel */
   .settings-toggle {
     font-size: 12px;
     letter-spacing: 2px;
     color: var(--ink-muted);
     background: none;
-    border: none;
-    cursor: pointer;
-    padding: 8px 16px;
     border: 1px solid var(--line);
     border-radius: 2px;
+    cursor: pointer;
+    padding: 8px 16px;
     transition: all 0.2s;
     font-family: 'Noto Serif TC', serif;
   }
@@ -247,6 +246,7 @@
   let ticker = null;
 
   const pad = n => String(Math.floor(n)).padStart(2, '0');
+  const pad2 = n => String(n).padStart(2, '0');
 
   function tick() {
     if (!target) return;
@@ -267,7 +267,6 @@
     const days = Math.floor(diff / 86400000);
     const hours = Math.floor((diff % 86400000) / 3600000);
     const mins = Math.floor((diff % 3600000) / 60000);
-    const secs = Math.floor((diff % 60000) / 1000);
 
     document.getElementById('d').textContent = pad(days);
     document.getElementById('h').textContent = pad(hours);
@@ -289,8 +288,14 @@
       ticker = setInterval(tick, 1000);
 
       const d = new Date(dtVal);
-      const fmt = `${d.getFullYear()}/${d.getMonth()+1}/${d.getDate()} ${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;
+      const fmt = `${d.getFullYear()}/${d.getMonth()+1}/${d.getDate()} ${pad2(d.getHours())}:${pad2(d.getMinutes())}`;
       document.getElementById('hint-text').textContent = `目標時間：${fmt}`;
+
+      // ✅ 存到 localStorage
+      localStorage.setItem('bc_title', titleVal);
+      localStorage.setItem('bc_sub', subVal);
+      localStorage.setItem('bc_target', target.toString());
+      localStorage.setItem('bc_hint', `目標時間：${fmt}`);
     }
 
     document.getElementById('panel').classList.remove('open');
@@ -300,15 +305,44 @@
     document.getElementById('panel').classList.toggle('open');
   }
 
-  // Default: 30 days from now
-  const def = new Date(Date.now() + 30*86400000);
-  const pad2 = n => String(n).padStart(2,'0');
-  document.getElementById('inp-dt').value =
-    `${def.getFullYear()}-${pad2(def.getMonth()+1)}-${pad2(def.getDate())}T${pad2(def.getHours())}:${pad2(def.getMinutes())}`;
+  // ✅ 頁面載入時：優先讀 localStorage，沒有才用預設值
+  const saved = localStorage.getItem('bc_target');
+  if (saved) {
+    target = parseInt(saved);
 
-  target = def.getTime();
+    const savedTitle = localStorage.getItem('bc_title');
+    const savedSub = localStorage.getItem('bc_sub');
+    const savedHint = localStorage.getItem('bc_hint');
+
+    if (savedTitle) {
+      document.getElementById('display-title').textContent = savedTitle;
+      document.getElementById('inp-title').value = savedTitle;
+    }
+    if (savedSub) {
+      document.getElementById('display-sub').textContent = savedSub;
+      document.getElementById('inp-sub').value = savedSub;
+    }
+    if (savedHint) {
+      document.getElementById('hint-text').textContent = savedHint;
+    }
+
+    // 把已存的時間填回 datetime-local 欄位
+    const d = new Date(target);
+    document.getElementById('inp-dt').value =
+      `${d.getFullYear()}-${pad2(d.getMonth()+1)}-${pad2(d.getDate())}T${pad2(d.getHours())}:${pad2(d.getMinutes())}`;
+
+  } else {
+    // 預設：30天後
+    const def = new Date(Date.now() + 30*86400000);
+    document.getElementById('inp-dt').value =
+      `${def.getFullYear()}-${pad2(def.getMonth()+1)}-${pad2(def.getDate())}T${pad2(def.getHours())}:${pad2(def.getMinutes())}`;
+    target = def.getTime();
+  }
+
   tick();
   ticker = setInterval(tick, 1000);
 </script>
 </body>
 </html>
+
+
